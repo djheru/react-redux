@@ -1,1 +1,2 @@
-import './hello-redux';
+// import './hello-redux';
+import './implementing-store';
