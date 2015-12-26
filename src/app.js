@@ -1,2 +1,1 @@
-import { foo } from './components/foo';
-foo({bar: 'baz'});
+import './hello-redux';
