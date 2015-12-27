@@ -26,7 +26,7 @@ const incrementCounter = (list, index) => {
     .slice(0, index)
     .concat([list[index] + 1])
     .concat(list.slice(index + 1)); */
-  return [
+  return [ // return a new array, not a mutated old array
     ...list.slice(0, index), // spread on the left
     list[index] + 1, // increment the item at the index
     ...list.slice(index + 1) // spread on the right
