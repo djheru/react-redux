@@ -1,8 +1,20 @@
 import expect from 'expect';
 import deepFreeze from 'deep-freeze';
-import { combineReducers } from 'redux';
 // import React from 'react';
 // import ReactDOM from 'react-dom';
+
+// import { combineReducers } from 'redux';
+const combineReducers = (reducers) => {
+  return (state = {}, action = {type: ''}) => {
+    Object.keys(reducers).reduce(
+      (nextState, key) => {
+        nextState[key] = reducers[key](state[key], action);
+        return nextState;
+      },
+      {}
+    );
+  };
+};
 
 const todo = (state, action) => {
   switch (action.type) {
@@ -57,6 +69,8 @@ const todoApp = combineReducers({
   todos: todos,
   visibilityFilter: visibilityFilter
 });
+
+console.log(todoApp);
 
 /*
 const todoApp = (state = {}, action = {type: ''}) => {
