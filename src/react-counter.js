@@ -1,6 +1,6 @@
 import expect from 'expect';
-import React from 'react';
 import ReactDOM from 'react-dom';
+import React from 'react';
 
 // import { createStore } from 'redux';// implement it ourselves
 
