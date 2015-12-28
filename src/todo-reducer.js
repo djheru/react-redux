@@ -1,5 +1,6 @@
 import expect from 'expect';
 import deepFreeze from 'deep-freeze';
+import { combineReducers } from 'redux';
 // import React from 'react';
 // import ReactDOM from 'react-dom';
 
@@ -52,12 +53,19 @@ const visibilityFilter = (state = 'SHOW_ALL', action = {type: ''}) => {
   }
 };
 
+const todoApp = combineReducers({
+  todos: todos,
+  visibilityFilter: visibilityFilter
+});
+
+/*
 const todoApp = (state = {}, action = {type: ''}) => {
   return {
     todos: todos(state.todos, action),
     visibilityFilter: visibilityFilter(state.visibilityFilter, action)
   };
 };
+*/
 
 const testAddTodo = () => {
   const stateBefore = [];
