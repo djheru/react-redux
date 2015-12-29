@@ -17,10 +17,13 @@ const todo = (state = {}, action = {type: ''}) => {
       };
 
     case 'TOGGLE_TODO':
-      if (todo.id !== action.id) {
+      console.log('toggle todo state', state);
+      if (state.id !== action.id) {
         return todo;
       }
-      return Object.assign({}, state, {completed: !state.completed});
+      let retVal = Object.assign({}, state, {completed: !state.completed});
+      console.log('todo retval', retVal);
+      return retVal;
 
     default:
       return state;
@@ -37,6 +40,7 @@ const todos = (state = [], action = {type: ''}) => {
       ];
 
     case 'TOGGLE_TODO':
+      console.log(state, action);
       return state.map(t => todo(t, action));
 
     default:
@@ -77,10 +81,18 @@ class TodoApp extends Component {
           this.input.value = '';
         }}>Add Todo</button>
         <ul>
-          {this.props.todos.map(todo => {
+          {this.props.todos.map((todo) => {
+            console.log('todo', todo);
             return (
-              <li key={todo.id}>
-                {todo.text}
+              <li key={todo.id}
+                onClick={() => {
+                  store.dispatch({
+                    type: 'TOGGLE_TODO',
+                    id: todo.id
+                  });
+                }}
+                style={{textDecoration: todo.completed ? 'line-through' : 'none'}}>
+                  {todo.text}
               </li>
             );
           })}
