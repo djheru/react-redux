@@ -6,6 +6,23 @@ const { Component } = React;
 
 let nextTodoId = 0;
 
+const getVisibleTodos = (todos, filter) => {
+  switch (filter) {
+    case 'SHOW_ALL':
+      return todos;
+    case 'SHOW_ACTIVE':
+      return todos.filter((todo) => {
+        return !todo.completed;
+      });
+    case 'SHOW_COMPLETED':
+      return todos.filter((todo) => {
+        return todo.completed;
+      });
+    default:
+      return todos;
+  }
+};
+
 const todo = (state = {}, action = {type: ''}) => {
   switch (action.type) {
     case 'ADD_TODO':
@@ -19,7 +36,7 @@ const todo = (state = {}, action = {type: ''}) => {
     case 'TOGGLE_TODO':
       console.log('toggle todo state', state);
       if (state.id !== action.id) {
-        return todo;
+        return state;
       }
       let retVal = Object.assign({}, state, {completed: !state.completed});
       console.log('todo retval', retVal);
@@ -40,8 +57,8 @@ const todos = (state = [], action = {type: ''}) => {
       ];
 
     case 'TOGGLE_TODO':
-      console.log(state, action);
-      return state.map(t => todo(t, action));
+      console.log('toggle', state, action);
+      return state.map((t) => todo(t, action));
 
     default:
       return state;
@@ -64,9 +81,36 @@ const todoApp = combineReducers({
 
 const store = createStore(todoApp);
 
+const FilterLink = ({
+  filter,
+  currentFilter,
+  children
+}) => {
+  if (filter === currentFilter) {
+    return (
+      <span>{children}</span>
+    );
+  }
+  return (
+    <a href='#'
+      onClick={(e) => {
+        e.preventDefault();
+        store.dispatch({
+          type: 'SET_VISIBILITY_FILTER',
+          filter
+        });
+      }}>
+      {children}
+    </a>
+  );
+};
+
 class TodoApp extends Component {
 
   render () {
+    const { todos, visibilityFilter } = this.props;
+    const visibleTodos = getVisibleTodos(todos, visibilityFilter);
+
     return (
       <div>
         <input ref={(node) => {
@@ -81,7 +125,7 @@ class TodoApp extends Component {
           this.input.value = '';
         }}>Add Todo</button>
         <ul>
-          {this.props.todos.map((todo) => {
+          {visibleTodos.map((todo) => {
             console.log('todo', todo);
             return (
               <li key={todo.id}
@@ -97,6 +141,11 @@ class TodoApp extends Component {
             );
           })}
         </ul>
+        <p> Show: &nbsp;
+          <FilterLink currentFilter={visibilityFilter} filter='SHOW_ALL'>All</FilterLink> &nbsp; | &nbsp;
+          <FilterLink currentFilter={visibilityFilter} filter='SHOW_ACTIVE'>Active</FilterLink> &nbsp; | &nbsp;
+          <FilterLink currentFilter={visibilityFilter} filter='SHOW_COMPLETED'>Completed</FilterLink>
+        </p>
       </div>
     );
   }
@@ -104,12 +153,13 @@ class TodoApp extends Component {
 
 // for the linter
 TodoApp.propTypes = {
-  todos: React.PropTypes.array.isRequired
+  todos: React.PropTypes.array.isRequired,
+  visibilityFilter: React.PropTypes.string
 };
 
 const render = () => {
   ReactDOM.render(
-    <TodoApp todos={store.getState().todos} />,
+    <TodoApp {...store.getState()} />,
     document.getElementById('root')
   );
 };
