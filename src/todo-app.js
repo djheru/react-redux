@@ -2,8 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { combineReducers, createStore } from 'redux';
 
-const { Component } = React;
-
 let nextTodoId = 0;
 
 const getVisibleTodos = (todos, filter) => {
@@ -84,7 +82,8 @@ const store = createStore(todoApp);
 const FilterLink = ({
   filter,
   currentFilter,
-  children
+  children,
+  onClick
 }) => {
   if (filter === currentFilter) {
     return (
@@ -95,61 +94,116 @@ const FilterLink = ({
     <a href='#'
       onClick={(e) => {
         e.preventDefault();
-        store.dispatch({
-          type: 'SET_VISIBILITY_FILTER',
-          filter
-        });
+        onClick(filter);
       }}>
       {children}
     </a>
   );
 };
 
-class TodoApp extends Component {
+const Footer = ({
+  visibilityFilter,
+  onFilterClick
+}) => {
+  return (
+    <p> Show: &nbsp;
+      <FilterLink
+        currentFilter={visibilityFilter}
+        onClick={onFilterClick}
+        filter='SHOW_ALL'>All</FilterLink> &nbsp; | &nbsp;
+      <FilterLink
+        currentFilter={visibilityFilter}
+        onClick={onFilterClick}
+        filter='SHOW_ACTIVE'>Active</FilterLink> &nbsp; | &nbsp;
+      <FilterLink
+        currentFilter={visibilityFilter}
+        onClick={onFilterClick}
+        filter='SHOW_COMPLETED'>Completed</FilterLink>
+    </p>
+  );
+};
 
-  render () {
-    const { todos, visibilityFilter } = this.props;
-    const visibleTodos = getVisibleTodos(todos, visibilityFilter);
+const AddTodo = ({onAddClick}) => {
+  let input;
+  return (
+    <div>
+      <input ref={(node) => {
+        input = node;
+      }} />
 
-    return (
-      <div>
-        <input ref={(node) => {
-          this.input = node;
-        }} />
-        <button onClick={() => {
+      <button onClick={() => {
+        onAddClick(input.value);
+        input.value = '';
+      }}>Add Todo</button>
+    </div>
+  );
+};
+
+const Todo = ({
+  onClick,
+  completed,
+  text
+}) => (
+  <li onClick={onClick}
+      style={{textDecoration: completed ? 'line-through' : 'none'}}>
+    {text}
+  </li>
+);
+
+const TodoList = ({
+  todos,
+  onTodoClick
+}) => (
+  <ul>
+    {todos.map((todo) => {
+      return (
+        <Todo
+          key={todo.id }
+          completed={todo.completed}
+          text={todo.text}
+          onClick={() => onTodoClick(todo.id)} />
+      );
+    })}
+  </ul>
+);
+
+const TodoApp = ({
+    todos,
+    visibilityFilter
+  }) => {
+  return (
+    <div>
+
+      <AddTodo
+        onAddClick={(text) => {
           store.dispatch({
             type: 'ADD_TODO',
-            text: this.input.value,
+            text: text,
             id: nextTodoId++
           });
-          this.input.value = '';
-        }}>Add Todo</button>
-        <ul>
-          {visibleTodos.map((todo) => {
-            console.log('todo', todo);
-            return (
-              <li key={todo.id}
-                onClick={() => {
-                  store.dispatch({
-                    type: 'TOGGLE_TODO',
-                    id: todo.id
-                  });
-                }}
-                style={{textDecoration: todo.completed ? 'line-through' : 'none'}}>
-                  {todo.text}
-              </li>
-            );
-          })}
-        </ul>
-        <p> Show: &nbsp;
-          <FilterLink currentFilter={visibilityFilter} filter='SHOW_ALL'>All</FilterLink> &nbsp; | &nbsp;
-          <FilterLink currentFilter={visibilityFilter} filter='SHOW_ACTIVE'>Active</FilterLink> &nbsp; | &nbsp;
-          <FilterLink currentFilter={visibilityFilter} filter='SHOW_COMPLETED'>Completed</FilterLink>
-        </p>
-      </div>
-    );
-  }
-}
+        }} />
+
+      <TodoList
+        todos={getVisibleTodos(todos, visibilityFilter)}
+        onTodoClick={(id) => {
+          store.dispatch({
+            type: 'TOGGLE_TODO',
+            id: id
+          });
+        }}/>
+
+      <Footer
+        onFilterClick={(filter) => {
+          store.dispatch({
+            type: 'SET_VISIBILITY_FILTER',
+            filter: filter
+          });
+        }}
+        visibilityFilter={visibilityFilter} />
+
+    </div>
+  );
+};
 
 // for the linter
 TodoApp.propTypes = {
