@@ -139,7 +139,7 @@ const Footer = () => {
   );
 };
 
-const AddTodo = ({onAddClick}) => {
+const AddTodo = () => {
   let input;
   return (
     <div>
@@ -147,10 +147,15 @@ const AddTodo = ({onAddClick}) => {
         input = node;
       }} />
 
-      <button onClick={() => {
-        onAddClick(input.value);
-        input.value = '';
-      }}>Add Todo</button>
+      <button
+        onClick={() => {
+          store.dispatch({
+            type: 'ADD_TODO',
+            text: input.value,
+            id: nextTodoId++
+          });
+          input.value = '';
+        }}>Add Todo</button>
     </div>
   );
 };
@@ -183,53 +188,48 @@ const TodoList = ({
   </ul>
 );
 
-const TodoApp = ({
-    todos,
-    visibilityFilter
-  }) => {
-  return (
-    <div>
+class VisibleTodoList extends Component {
 
-      <AddTodo
-        onAddClick={(text) => {
-          store.dispatch({
-            type: 'ADD_TODO',
-            text: text,
-            id: nextTodoId++
-          });
-        }} />
+  componentDidMount () {
+    this.unsubscribe = store.subscribe(() => this.forceUpdate());
+  }
 
+  componentWillUnmount () {
+    this.unsubscribe();
+  }
+
+  render () {
+    // const props = this.props;
+    const state = store.getState();
+
+    return (
       <TodoList
-        todos={getVisibleTodos(todos, visibilityFilter)}
+        todos={getVisibleTodos(state.todos, state.visibilityFilter)}
         onTodoClick={(id) => {
           store.dispatch({
             type: 'TOGGLE_TODO',
             id: id
           });
         }}/>
+    );
+  }
+}
 
-      <Footer
-        onFilterClick={(filter) => {
-          store.dispatch({
-            type: 'SET_VISIBILITY_FILTER',
-            filter: filter
-          });
-        }}
-        visibilityFilter={visibilityFilter} />
+const TodoApp = () => {
+  return (
+    <div>
+
+      <AddTodo />
+      <VisibleTodoList />
+      <Footer />
 
     </div>
   );
 };
 
-// for the linter
-TodoApp.propTypes = {
-  todos: React.PropTypes.array.isRequired,
-  visibilityFilter: React.PropTypes.string
-};
-
 const render = () => {
   ReactDOM.render(
-    <TodoApp {...store.getState()} />,
+    <TodoApp />,
     document.getElementById('root')
   );
 };
