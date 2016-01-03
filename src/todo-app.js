@@ -7,6 +7,29 @@ const { Component } = React;
 
 let nextTodoId = 0;
 
+// action creators
+const addTodo = (text) => {
+  return {
+    type: 'ADD_TODO',
+    text: text,
+    id: nextTodoId++
+  };
+};
+
+const setVisibilityFilter = (filter) => {
+  return {
+    type: 'SET_VISIBILITY_FILTER',
+    filter: filter
+  };
+};
+
+const toggleTodo = (id) => {
+  return {
+    type: 'TOGGLE_TODO',
+    id: id
+  };
+};
+
 const getVisibleTodos = (todos, filter) => {
   switch (filter) {
     case 'SHOW_ALL':
@@ -109,7 +132,7 @@ const mapStateToLinkProps = (state, ownProps) => {
 const mapDispatchToLinKProps = (dispatch, ownProps) => {
   return {
     onClick: () => {
-      dispatch({ type: 'SET_VISIBILITY_FILTER', filter: ownProps.filter });
+      dispatch(setVisibilityFilter(ownProps.filter));
     }
   };
 };
@@ -140,11 +163,7 @@ let AddTodo = ({ dispatch }) => {
 
       <button
         onClick={() => {
-          dispatch({
-            type: 'ADD_TODO',
-            text: input.value,
-            id: nextTodoId++
-          });
+          dispatch(addTodo(input.value));
           input.value = '';
         }}>Add Todo</button>
     </div>
@@ -192,10 +211,7 @@ const mapStateToTodoListProps = (state) => {
 const mapDispatchToTodoListProps = (dispatch) => {
   return {
     onTodoClick: (id) => {
-      dispatch({
-        type: 'TOGGLE_TODO',
-        id: id
-      });
+      dispatch(toggleTodo(id));
     }
   };
 };
