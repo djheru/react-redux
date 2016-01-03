@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { connect } from 'react-redux';
 import { combineReducers, createStore } from 'redux';
 
 const { Component } = React;
@@ -194,6 +195,25 @@ const TodoList = ({
   </ul>
 );
 
+const mapStateToProps = (state) => {
+  return {
+    todos: getVisibleTodos(state.todos, state.visibilityFilter)
+  };
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    onTodoClick: (id) => {
+      dispatch({
+        type: 'TOGGLE_TODO',
+        id: id
+      });
+    }
+  };
+};
+
+const VisibleTodoList = connect(mapStateToProps, mapDispatchToProps)(TodoList);
+/*
 class VisibleTodoList extends Component {
 
   componentDidMount () {
@@ -221,6 +241,8 @@ class VisibleTodoList extends Component {
     );
   }
 }
+*/
+
 VisibleTodoList.contextTypes = {
   store: React.PropTypes.object
 };
