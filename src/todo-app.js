@@ -39,7 +39,6 @@ const todo = (state = {}, action = {type: ''}) => {
         return state;
       }
       let retVal = Object.assign({}, state, {completed: !state.completed});
-      console.log('todo retval', retVal);
       return retVal;
 
     default:
@@ -79,8 +78,6 @@ const todoApp = combineReducers({
   visibilityFilter: visibilityFilter
 });
 
-const store = createStore(todoApp);
-
 const Link = ({
   active,
   children,
@@ -105,6 +102,7 @@ const Link = ({
 class FilterLink extends Component {
 
   componentDidMount () {
+    const { store } = this.context;
     this.unsubscribe = store.subscribe(() => this.forceUpdate());
   }
 
@@ -114,6 +112,7 @@ class FilterLink extends Component {
 
   render () {
     const props = this.props;
+    const { store } = this.context;
     const state = store.getState();
 
     return (
@@ -125,6 +124,9 @@ class FilterLink extends Component {
     );
   }
 }
+FilterLink.contextTypes = {
+  store: React.PropTypes.object
+};
 
 const Footer = () => {
   return (
@@ -139,8 +141,9 @@ const Footer = () => {
   );
 };
 
-const AddTodo = () => {
+const AddTodo = (props, { store }) => {
   let input;
+
   return (
     <div>
       <input ref={(node) => {
@@ -158,6 +161,9 @@ const AddTodo = () => {
         }}>Add Todo</button>
     </div>
   );
+};
+AddTodo.contextTypes = {
+  store: React.PropTypes.object
 };
 
 const Todo = ({
@@ -191,6 +197,7 @@ const TodoList = ({
 class VisibleTodoList extends Component {
 
   componentDidMount () {
+    const { store } = this.context;
     this.unsubscribe = store.subscribe(() => this.forceUpdate());
   }
 
@@ -199,7 +206,7 @@ class VisibleTodoList extends Component {
   }
 
   render () {
-    // const props = this.props;
+    const { store } = this.context;
     const state = store.getState();
 
     return (
@@ -214,25 +221,49 @@ class VisibleTodoList extends Component {
     );
   }
 }
+VisibleTodoList.contextTypes = {
+  store: React.PropTypes.object
+};
+
+class Provider extends Component {
+
+  // This method makes the store available to all the children
+  getChildContext () {
+    return { store: this.props.store };
+  };
+
+  render () {
+    return this.props.children;
+  }
+}
+
+Provider.propTypes = {
+  store: React.PropTypes.object,
+  children: React.PropTypes.object
+};
+
+// This declaration is necessary to make the context available for the children
+Provider.childContextTypes = {
+  store: React.PropTypes.object
+};
 
 const TodoApp = () => {
   return (
     <div>
-
       <AddTodo />
       <VisibleTodoList />
       <Footer />
-
     </div>
   );
 };
 
 const render = () => {
   ReactDOM.render(
-    <TodoApp />,
+    <Provider store={createStore(todoApp)}>
+      <TodoApp />
+    </Provider>,
     document.getElementById('root')
   );
 };
 
-store.subscribe(render);
 render();
