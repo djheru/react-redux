@@ -100,34 +100,21 @@ const Link = ({
   );
 };
 
-class FilterLink extends Component {
-
-  componentDidMount () {
-    const { store } = this.context;
-    this.unsubscribe = store.subscribe(() => this.forceUpdate());
-  }
-
-  componentWillUnmount () {
-    this.unsubscribe();
-  }
-
-  render () {
-    const props = this.props;
-    const { store } = this.context;
-    const state = store.getState();
-
-    return (
-      <Link
-        active={ props.filter === state.visibilityFilter }
-        onClick={() => {
-          store.dispatch({ type: 'SET_VISIBILITY_FILTER', filter: props.filter });
-        }}>{props.children}</Link>
-    );
-  }
-}
-FilterLink.contextTypes = {
-  store: React.PropTypes.object
+const mapStateToLinkProps = (state, ownProps) => {
+  return {
+    active: ownProps.filter === state.visibilityFilter
+  };
 };
+
+const mapDispatchToLinKProps = (dispatch, ownProps) => {
+  return {
+    onClick: () => {
+      dispatch({ type: 'SET_VISIBILITY_FILTER', filter: ownProps.filter });
+    }
+  };
+};
+
+const FilterLink = connect(mapStateToLinkProps, mapDispatchToLinKProps)(Link);
 
 const Footer = () => {
   return (
@@ -153,7 +140,7 @@ let AddTodo = ({ dispatch }) => {
 
       <button
         onClick={() => {
-          store.dispatch({
+          dispatch({
             type: 'ADD_TODO',
             text: input.value,
             id: nextTodoId++
@@ -164,8 +151,8 @@ let AddTodo = ({ dispatch }) => {
   );
 };
 AddTodo = connect(// connect with no args will wrap the component and inject store.dispatch
-  null,// no need to subscribe to the store
-  null// no need to specify dispatch map, still injects dispatch
+  null, // no need to subscribe to the store
+  null // no need to specify dispatch map, still injects dispatch
 )(AddTodo);
 
 const Todo = ({
